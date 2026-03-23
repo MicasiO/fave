@@ -1,3 +1,4 @@
+#include "action.h"
 #include "dir.h"
 #include <stdio.h>
 #include <string.h>
@@ -5,41 +6,94 @@
 
 int main(int argc, char* argv[]) {
 
-    dir* a = NULL;
-    dir* b = NULL;
+    Dir* a = NULL;
+    Dir* b = NULL;
 
-    if (argc != 4) {
-        fprintf(stderr,
-                "Error: Insufficient amount of options. Expected 3 arguments, got %d.\n",
-                argc - 1);
+    if (argc != 2 && argc != 3) {
+        fprintf(
+            stderr,
+            "Error: Insufficient amount of options. Expected 1-2 arguments, got %d.\n",
+            argc - 1);
         return 1;
     }
 
     char* command = argv[1];
-    char* option = argv[2];
-    char* value = argv[3];
+    char* addition_arg = NULL;
 
-    if (strcmp(command, "add") != 0 && strcmp(command, "show") != 0) {
-        fprintf(stderr, "Error: unknown option '%s'. Available options are: add, show\n",
-                command);
+    if (strlen(command) > 2) {
+        fprintf(stderr, "Error: Invalid command.\n");
+        return 1;
     }
 
-    if (strcmp(option, "-c") != 0 && strcmp(option, "-d") != 0) {
-        fprintf(stderr, "Error: unknown option '%s'. Available options are: -c, -d\n",
-                option);
-    }
+    Object object = -1;
+    Action action = -1;
 
-    dir_arr data;
-    init_dir_arr(&data);
-    deserialize(&data);
-
-    for (int i = 0; i < data.size; i++) {
-        printf("%s\n", data.dirs[i]->title);
-        for (int j = 0; j < data.dirs[i]->commands.size; j++) {
-
-            printf("%s\n", data.dirs[i]->commands.items[j]);
+    for (int i = 0; command[i] != '\0'; i++) {
+        switch (command[i]) {
+        case 's':
+            action = SHOW;
+            break;
+        case 'a':
+            action = ADD;
+            break;
+        case 'r':
+            action = REMOVE;
+            break;
+        case 'd':
+            object = DIRECTORY;
+            break;
+        case 'c':
+            object = COMMAND;
+            break;
+        default:
+            fprintf(stderr, "Error: Unknown flag '%c'\n", command[i]);
+            return 1;
         }
     }
+
+    if (action == -1 || object == -1) {
+        fprintf(stderr,
+                "Error: Must specify both an action (s,a,r) and an object (d,c).\n");
+        return 1;
+    }
+
+    switch (action) {
+    case SHOW:
+        if (object == DIRECTORY)
+            // show_all_directories(&data);
+            ;
+        else
+            // show_commands_for_dir(current_dir);
+            break;
+
+    case ADD:
+        if (object == DIRECTORY)
+            // handle_add_directory(&data, argv[2]);
+            ;
+        else
+            // handle_add_command(current_dir, argv[2]);
+            break;
+
+    case REMOVE:
+        // ... handle removal
+
+        break;
+
+    default:
+        break;
+    }
+
+    // DirArr data;
+    // init_dir_arr(&data);
+    // deserialize(&data);
+    //
+    // for (int i = 0; i < data.size; i++) {
+    //     printf("%s\n", data.dirs[i]->title);
+    //     for (int j = 0; j < data.dirs[i]->commands.size; j++) {
+    //
+    //         printf("%s\n", data.dirs[i]->commands.items[j]);
+    //     }
+    // }
     // push_dir_arr(&data, "/home/mike/Documents/Code/");
     // push_dir_arr(&data, "/home/mike/Documents/Code/cpp/calendar-tui/");
     //
@@ -56,8 +110,8 @@ int main(int argc, char* argv[]) {
     // }
     //
     // serialize(&data);
-
-    free_dir_arr(&data);
+    //
+    // free_dir_arr(&data);
 
     return 0;
 }

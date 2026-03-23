@@ -3,9 +3,9 @@ typedef struct {
     int capacity;
     int size;
 
-} str_arr;
+} StrArr;
 
-int init_str_arr(str_arr* arr);
-int push_str_arr(str_arr* arr, const char* str);
-int pop_str_arr(str_arr* arr, const char* str);
-void free_str_arr(str_arr* arr);
+int init_str_arr(StrArr* arr);
+int push_str_arr(StrArr* arr, const char* str);
+int pop_str_arr(StrArr* arr, const char* str);
+void free_str_arr(StrArr* arr);

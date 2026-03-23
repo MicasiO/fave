@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int init_str_arr(str_arr* arr) {
+int init_str_arr(StrArr* arr) {
     arr->size = 0;
     arr->capacity = 4;
     arr->items = (char**)calloc(arr->capacity, sizeof(*arr->items));
@@ -16,7 +16,7 @@ int init_str_arr(str_arr* arr) {
     return 0;
 }
 
-int push_str_arr(str_arr* arr, const char* str) {
+int push_str_arr(StrArr* arr, const char* str) {
     if (arr->size == arr->capacity) {
         int new_capacity = arr->capacity * 2;
 
@@ -41,7 +41,7 @@ int push_str_arr(str_arr* arr, const char* str) {
     return 0;
 }
 
-int pop_str_arr(str_arr* arr, const char* str) {
+int pop_str_arr(StrArr* arr, const char* str) {
     int found_index = -1;
 
     for (int i = 0; i < arr->size; i++) {
@@ -68,7 +68,7 @@ int pop_str_arr(str_arr* arr, const char* str) {
     return 0;
 }
 
-void free_str_arr(str_arr* arr) {
+void free_str_arr(StrArr* arr) {
     if (arr == NULL) {
         return;
     }

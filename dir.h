@@ -2,29 +2,24 @@
 
 typedef struct {
     char* title;
-    str_arr commands;
-} dir;
+    StrArr commands;
+} Dir;
 
 typedef struct {
-    dir** dirs;
+    Dir** dirs;
     int capacity;
     int size;
 
-} dir_arr;
+} DirArr;
 
 // dir
-int init_dir(dir* dir, const char* title);
-int push_command_dir(dir* dir, const char* comm);
-int pop_command_dir(dir* dir, const char* comm);
-void free_dir(dir* dir);
+int init_dir(Dir* dir, const char* title);
+int push_command_dir(Dir* dir, const char* comm);
+int pop_command_dir(Dir* dir, const char* comm);
+void free_dir(Dir* dir);
 
 // dir array
-int init_dir_arr(dir_arr* data);
-int push_dir_arr(dir_arr* data, const char* title);
-dir* get_dir(dir_arr* data, const char* title);
-void free_dir_arr(dir_arr* data);
-
-// utils
-const char* get_data_path();
-int deserialize(dir_arr* data);
-int serialize(dir_arr* data);
+int init_dir_arr(DirArr* data);
+int push_dir_arr(DirArr* data, const char* title);
+Dir* get_dir(DirArr* data, const char* title);
+void free_dir_arr(DirArr* data);
