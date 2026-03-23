@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
+#include <unistd.h>
 
 // utils
 const char* get_data_path() {
@@ -87,4 +89,9 @@ int serialize(DirArr* data) {
     free((char*)path);
     fclose(file);
     return 0;
+}
+
+void handle_sigint(int sig) {
+    reset_terminal();
+    exit(0);
 }

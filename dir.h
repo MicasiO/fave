@@ -1,3 +1,6 @@
+#ifndef DIR_H
+#define DIR_H
+
 #include "array.h"
 
 typedef struct {
@@ -23,3 +26,5 @@ int init_dir_arr(DirArr* data);
 int push_dir_arr(DirArr* data, const char* title);
 Dir* get_dir(DirArr* data, const char* title);
 void free_dir_arr(DirArr* data);
+
+#endif

@@ -1,13 +1,13 @@
 #include "action.h"
-#include "dir.h"
+#include "utils.h"
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
 int main(int argc, char* argv[]) {
 
-    Dir* a = NULL;
-    Dir* b = NULL;
+    signal(SIGINT, handle_sigint);
 
     if (argc != 2 && argc != 3) {
         fprintf(
@@ -60,23 +60,23 @@ int main(int argc, char* argv[]) {
     switch (action) {
     case SHOW:
         if (object == DIRECTORY)
-            // show_all_directories(&data);
-            ;
+            handle_show_dirs();
         else
-            // show_commands_for_dir(current_dir);
-            break;
+            handle_show_comms();
+        break;
 
     case ADD:
         if (object == DIRECTORY)
-            // handle_add_directory(&data, argv[2]);
-            ;
+            handle_add_dir();
         else
-            // handle_add_command(current_dir, argv[2]);
-            break;
+            handle_add_comm();
+        break;
 
     case REMOVE:
-        // ... handle removal
-
+        if (object == DIRECTORY)
+            handle_rm_dir();
+        else
+            handle_rm_comm();
         break;
 
     default:
