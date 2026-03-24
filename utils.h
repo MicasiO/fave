@@ -29,5 +29,7 @@ int deserialize(DirArr* data);
 int serialize(DirArr* data);
 void handle_sigint(int sig);
 void run_command(const char* cmd);
+void init_terminal();
+void reset_terminal();
 
 #endif

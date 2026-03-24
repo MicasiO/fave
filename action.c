@@ -29,7 +29,8 @@ void handle_show_dirs() {
     if (fgets(input, sizeof(input), stdin)) {
         if (sscanf(input, "%d", &number) == 1) {
             if (number - 1 >= 0 && number - 1 < data.size) {
-                fprintf(stdout, "cd '%s'", data.dirs[number - 1]->title);
+                fprintf(stdout, "cd '%s'\n", data.dirs[number - 1]->title);
+                fprintf(stderr, "\n");
                 free_dir_arr(&data);
                 return;
             }
@@ -75,7 +76,7 @@ void handle_show_comms() {
     if (fgets(input, sizeof(input), stdin)) {
         if (sscanf(input, "%d", &number) == 1) {
             if (number - 1 >= 0 && number - 1 < dir->commands.size) {
-                fprintf(stdout, "%s", dir->commands.items[number - 1]);
+                fprintf(stdout, "%s\n", dir->commands.items[number - 1]);
                 free((char*)path);
                 free_dir_arr(&data);
                 return;

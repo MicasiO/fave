@@ -128,3 +128,19 @@ void run_command(const char* cmd) {
         wait(NULL);
     }
 }
+
+void init_terminal() {
+    struct termios term;
+    tcgetattr(STDIN_FILENO, &term);
+    term.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &term);
+    printf(HIDE_CURSOR);
+}
+
+void reset_terminal() {
+    struct termios term;
+    tcgetattr(STDIN_FILENO, &term);
+    term.c_lflag |= (ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &term);
+    printf(SHOW_CURSOR);
+}
