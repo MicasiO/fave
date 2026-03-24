@@ -1,7 +1,6 @@
 #include "action.h"
 #include "array.h"
 #include "dir.h"
-#include "dropdown.h"
 #include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,35 +50,40 @@ void handle_show_comms() {
     Dir* dir = get_dir(&data, path);
 
     if (dir == NULL) {
+        free((char*)path);
+        free_dir_arr(&data);
         fprintf(stderr, "This directory is not faved\n");
         return;
     }
 
     if (dir->commands.size == 0) {
+        free((char*)path);
+        free_dir_arr(&data);
         fprintf(stderr, "This directory has no faved commands\n");
         return;
     }
 
-    printf("Faved commands:\n");
-
-    StrArr options;
-    init_str_arr(&options);
-
+    fprintf(stderr, BOLD "Faved commands:\n" RESET);
     for (int i = 0; i < dir->commands.size; i++) {
-        push_str_arr(&options, dir->commands.items[i]);
+        fprintf(stderr, "%d) %s\n", i + 1, dir->commands.items[i]);
     }
 
-    Dropdown* dropdown = create_dropdown(options.items, options.size);
+    fprintf(stderr, BOLD "\nSelect number: " RESET);
+    char input[256];
+    int number;
 
-    int selected = run_dropdown(dropdown);
-
-    printf(CLEAR_SCREEN);
-    if (selected >= 0) {
-        run_command(options.items[selected]);
+    if (fgets(input, sizeof(input), stdin)) {
+        if (sscanf(input, "%d", &number) == 1) {
+            if (number - 1 >= 0 && number - 1 < dir->commands.size) {
+                fprintf(stdout, "%s", dir->commands.items[number - 1]);
+                free((char*)path);
+                free_dir_arr(&data);
+                return;
+            }
+        }
     }
 
-    free_dropdown(dropdown);
-    free_str_arr(&options);
+    fprintf(stderr, "Invalid input\n");
     free_dir_arr(&data);
     free((char*)path);
 }
@@ -103,12 +107,36 @@ void handle_add_dir() {
 
     serialize(&data);
 
-    fprintf(stderr, "Faved: %s\n", path);
+    fprintf(stderr, BOLD "Faved: " RESET "%s\n", path);
 
     free((char*)path);
     free_dir_arr(&data);
 }
-void handle_add_comm() {}
+
+void handle_add_comm(const char* comm) {
+    DirArr data;
+    init_dir_arr(&data);
+    deserialize(&data);
+
+    const char* path = get_current_path();
+
+    Dir* test_dir = get_dir(&data, path);
+    if (test_dir == NULL) {
+        fprintf(stderr, "This directory is not faved\n");
+        free_dir_arr(&data);
+        free((char*)path);
+        return;
+    }
+
+    push_command_dir(test_dir, comm);
+
+    serialize(&data);
+
+    fprintf(stderr, BOLD "Faved: " RESET "%s\n", comm);
+
+    free((char*)path);
+    free_dir_arr(&data);
+}
 
 void handle_rm_dir() {
     DirArr data;
@@ -129,9 +157,60 @@ void handle_rm_dir() {
 
     serialize(&data);
 
-    fprintf(stderr, "Removed: %s\n", path);
+    fprintf(stderr, BOLD "Removed: " RESET "%s\n", path);
 
     free((char*)path);
     free_dir_arr(&data);
 }
-void handle_rm_comm() {}
+
+void handle_rm_comm() {
+    const char* path = get_current_path();
+
+    DirArr data;
+    init_dir_arr(&data);
+    deserialize(&data);
+
+    Dir* dir = get_dir(&data, path);
+
+    if (dir == NULL) {
+        free((char*)path);
+        free_dir_arr(&data);
+        fprintf(stderr, "This directory is not faved\n");
+        return;
+    }
+
+    if (dir->commands.size == 0) {
+        free((char*)path);
+        free_dir_arr(&data);
+        fprintf(stderr, "This directory has no faved commands\n");
+        return;
+    }
+
+    fprintf(stderr, BOLD "Remove faved command:\n" RESET);
+    for (int i = 0; i < dir->commands.size; i++) {
+        fprintf(stderr, "%d) %s\n", i + 1, dir->commands.items[i]);
+    }
+
+    fprintf(stderr, BOLD "\nSelect number: " RESET);
+    char input[256];
+    int number;
+
+    if (fgets(input, sizeof(input), stdin)) {
+        if (sscanf(input, "%d", &number) == 1) {
+            if (number - 1 >= 0 && number - 1 < dir->commands.size) {
+                fprintf(stderr, BOLD "Removed: " RESET "%s",
+                        dir->commands.items[number - 1]);
+                pop_command_dir(dir, dir->commands.items[number - 1]);
+                serialize(&data);
+
+                free((char*)path);
+                free_dir_arr(&data);
+                return;
+            }
+        }
+    }
+
+    fprintf(stderr, "Invalid input\n");
+    free_dir_arr(&data);
+    free((char*)path);
+}
