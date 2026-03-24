@@ -4,18 +4,22 @@
 *(Note: I am aware of convenient solutions such as `reverse-i-search` and aliases. This project was a way of learning some C)*
 
 Feature ideas for the future:
-    - option to provide title or note for directory/command
-    - automatically create faved folder if `fave ac` was ran in a non-faved folder
+- option to provide title or note for directory/command
+- automatically create faved folder if `fave ac` was ran in a non-faved folder
 
 ### Usage
 
-`fave ad` - **a**dds current working **d**irectory
-`fave rd` - **r**emoves current working **d**irectory
-`fave sd` - **s**hows a list of saved (faved) **d**irectories and prompts you to enter a number to jump to that directory
+`fave ad` **a**dds current working **d**irectory
 
-`fave ac [command]` - **a**dds a **c**ommand to the current directory (if it is saved)
-`fave rc` - shows a list of saved commands and prompts you to enter a number to **r**emove a **c**ommand
-`fave sc` - **s**hows a list of saved **c**ommands and prompts you to enter a number to execute a command
+`fave rd` **r**emoves current working **d**irectory
+
+`fave sd` **s**hows a list of saved (faved) **d**irectories and prompts you to enter a number to jump to that directory
+
+`fave ac [command]` **a**dds a **c**ommand to the current directory (if it is saved)
+
+`fave rc` shows a list of saved commands and prompts you to enter a number to **r**emove a **c**ommand
+
+`fave sc` **s**hows a list of saved **c**ommands and prompts you to enter a number to execute a command
 
 Example:
 ```sh
