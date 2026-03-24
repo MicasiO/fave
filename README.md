@@ -18,7 +18,7 @@ Feature ideas for the future:
 `fave sc` - **s**hows a list of saved **c**ommands and prompts you to enter a number to execute a command
 
 Example:
-```bash
+```sh
 $ fave sd
 Faved directories:
 1) /home/user/directory1/
@@ -33,7 +33,7 @@ Faved commands:
 
 Select number: 1
 
- > executes command 1...
+$ executes command 1...
 ```
 
 ### Prerequisites
@@ -45,7 +45,7 @@ Select number: 1
 
 Since a C program cannot change the directory of the parent shell the program has ran in, there is a slight workaround:
 
-```bash
+```sh
 fave() {
     local result=$(/path/to/binary/fave "$@")
     
