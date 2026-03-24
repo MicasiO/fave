@@ -11,6 +11,7 @@ typedef struct {
 int init_str_arr(StrArr* arr);
 int push_str_arr(StrArr* arr, const char* str);
 int pop_str_arr(StrArr* arr, const char* str);
+void split_str(StrArr* arr, const char* str, const char* delim);
 void free_str_arr(StrArr* arr);
 
 #endif

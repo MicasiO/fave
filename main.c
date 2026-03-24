@@ -5,6 +5,12 @@
 #include <string.h>
 #include <unistd.h>
 
+// NOTE: all stderr is swapped with stdin.
+//       fprintf(stdin, ...) is read into
+//       the command to execute, so for
+//       printing to the screen, use
+//       fprintf(stderr, ...)
+
 int main(int argc, char* argv[]) {
 
     signal(SIGINT, handle_sigint);
@@ -55,6 +61,24 @@ int main(int argc, char* argv[]) {
         fprintf(stderr,
                 "Error: Must specify both an action (s,a,r) and an object (d,c).\n");
         return 1;
+    }
+
+    if (action != ADD || object != COMMAND) {
+        if (argc != 2) {
+            fprintf(
+                stderr,
+                "Error: Insufficient amount of options. Expected 1 argument, got %d.\n",
+                argc - 1);
+            return 1;
+        }
+    } else {
+        if (argc != 3) {
+            fprintf(
+                stderr,
+                "Error: Insufficient amount of options. Expected 2 arguments, got %d.\n",
+                argc - 1);
+            return 1;
+        }
     }
 
     switch (action) {

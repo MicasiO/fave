@@ -1,8 +1,10 @@
 #include "utils.h"
 #include <dirent.h>
+#include <linux/limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -24,6 +26,24 @@ const char* get_data_path() {
     }
 
     snprintf(path, len, "%s%s", home, sub_path);
+    return path;
+}
+
+const char* get_current_path() {
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+        perror("Failed to get current directory path");
+        return NULL;
+    }
+
+    size_t len = strlen(cwd) + 2;
+
+    char* path = malloc(len);
+    if (path == NULL) {
+        return NULL;
+    }
+
+    snprintf(path, len, "%s/", cwd);
     return path;
 }
 
@@ -94,4 +114,17 @@ int serialize(DirArr* data) {
 void handle_sigint(int sig) {
     reset_terminal();
     exit(0);
+}
+
+void run_command(const char* cmd) {
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        char* args[] = {"sh", "-c", (char*)cmd, NULL};
+        execvp("sh", args);
+        perror("Failed to execute command");
+        exit(1);
+    } else {
+        wait(NULL);
+    }
 }

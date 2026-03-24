@@ -68,6 +68,24 @@ int pop_str_arr(StrArr* arr, const char* str) {
     return 0;
 }
 
+void split_str(StrArr* arr, const char* str, const char* delim) {
+    if (str == NULL)
+        return;
+
+    char* copy = strdup(delim);
+    if (!copy)
+        return;
+
+    char* token = strtok(copy, delim);
+
+    while (token != NULL) {
+        push_str_arr(arr, strdup(copy));
+        token = strtok(NULL, delim);
+    }
+
+    free(copy);
+}
+
 void free_str_arr(StrArr* arr) {
     if (arr == NULL) {
         return;

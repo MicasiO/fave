@@ -92,6 +92,33 @@ int push_dir_arr(DirArr* data, const char* title) {
     return 0;
 }
 
+int pop_dir_arr(DirArr* data, const char* title) {
+    int found_index = -1;
+
+    for (int i = 0; i < data->size; i++) {
+        if (strcmp(data->dirs[i]->title, title) == 0) {
+            found_index = i;
+            break;
+        }
+    }
+
+    if (found_index == -1) {
+        return 1;
+    }
+
+    free_dir(data->dirs[found_index]);
+
+    for (int i = found_index; i < data->size - 1; i++) {
+        data->dirs[i] = data->dirs[i + 1];
+    }
+
+    data->size--;
+
+    data->dirs[data->size] = NULL;
+
+    return 0;
+}
+
 Dir* get_dir(DirArr* data, const char* title) {
     if (data == NULL || title == NULL) {
         return NULL;

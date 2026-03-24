@@ -24,6 +24,7 @@ void free_dir(Dir* dir);
 // dir array
 int init_dir_arr(DirArr* data);
 int push_dir_arr(DirArr* data, const char* title);
+int pop_dir_arr(DirArr* data, const char* title);
 Dir* get_dir(DirArr* data, const char* title);
 void free_dir_arr(DirArr* data);
 
