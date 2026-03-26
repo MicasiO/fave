@@ -2,6 +2,7 @@
 #include "utils.h"
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -10,6 +11,8 @@
 //       the command to execute, so for
 //       printing to the screen, use
 //       fprintf(stderr, ...)
+
+char* get_note_arg(int argc, char* argv[], Object obj);
 
 int main(int argc, char* argv[]) {
 
@@ -24,7 +27,7 @@ int main(int argc, char* argv[]) {
     }
 
     char* command = argv[1];
-    char* addition_arg = NULL;
+    char* note = NULL;
 
     if (strlen(command) > 2) {
         fprintf(stderr, "Error: Invalid command.\n");
@@ -63,24 +66,34 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (action != ADD || object != COMMAND) {
-        if (argc != 2) {
-            fprintf(
-                stderr,
-                "Error: Insufficient amount of options. Expected 1 argument, got %d.\n",
-                argc - 1);
-            return 1;
+    if (action == ADD) {
+        if (object == COMMAND) {
+            if (argc != 3 && argc != 5) {
+                fprintf(
+                    stderr,
+                    "Error: Insufficient amount of options. Expected 2 or 4 arguments, "
+                    "got %d.\n",
+                    argc - 1);
+                return 1;
+            }
+        } else if (object == DIRECTORY) {
+            if (argc != 2 && argc != 4) {
+                fprintf(
+                    stderr,
+                    "Error: Insufficient amount of options. Expected 1 or 3 arguments, "
+                    "got %d.\n",
+                    argc - 1);
+                return 1;
+            }
         }
     } else {
-        if (argc != 3) {
-            fprintf(
-                stderr,
-                "Error: Insufficient amount of options. Expected 2 arguments, got %d.\n"
-                "If your command contains spaces, wrap it in quotes.\n",
-                argc - 1);
+        if (argc != 2) {
+            fprintf(stderr,
+                    "Error: Insufficient amount of options. Expected 1 argument, "
+                    "got %d.\n",
+                    argc - 1);
             return 1;
         }
-        addition_arg = argv[2];
     }
 
     switch (action) {
@@ -92,10 +105,14 @@ int main(int argc, char* argv[]) {
         break;
 
     case ADD:
+        if (argc == 4 || argc == 5) {
+            note = get_note_arg(argc, argv, object);
+        }
         if (object == DIRECTORY)
-            handle_add_dir();
+            handle_add_dir(note);
         else
-            handle_add_comm(addition_arg);
+            handle_add_comm(argv[2], note);
+
         break;
 
     case REMOVE:
@@ -110,4 +127,35 @@ int main(int argc, char* argv[]) {
     }
 
     return 0;
+}
+
+char* get_note_arg(int argc, char* argv[], Object obj) {
+    int i = -1;
+    if (obj == COMMAND) {
+        i = 3;
+    } else {
+        i = 2;
+    }
+    if (strcmp(argv[i], "-n") != 0) {
+        fprintf(stderr,
+                "Error: invalid option. If you are trying to add a note, use this "
+                "format:\nfave %s -n 'note'\n",
+                argv[1]);
+        exit(1);
+    }
+
+    if (argv[i + 1][0] == '\0') {
+        fprintf(stderr, "Error: note cannot be empty.\n");
+        exit(1);
+    }
+
+    size_t len = strlen(argv[i + 1]) + 1;
+
+    char* note = malloc(len);
+    if (note == NULL) {
+        return NULL;
+    }
+
+    snprintf(note, len, "%s", argv[i + 1]);
+    return note;
 }

@@ -1,5 +1,4 @@
 #include "action.h"
-#include "array.h"
 #include "dir.h"
 #include "utils.h"
 #include <stdio.h>
@@ -19,7 +18,12 @@ void handle_show_dirs() {
     fprintf(stderr, BOLD "Faved directories:\n" RESET);
 
     for (int i = 0; i < data.size; i++) {
-        fprintf(stderr, "%d) %s\n", i + 1, data.dirs[i]->title);
+        if (data.dirs[i]->note != NULL) {
+            fprintf(stderr, "%d) '%s' - %s\n", i + 1, data.dirs[i]->note,
+                    data.dirs[i]->path);
+        } else {
+            fprintf(stderr, "%d) %s\n", i + 1, data.dirs[i]->path);
+        }
     }
 
     fprintf(stderr, BOLD "\nSelect number: " RESET);
@@ -29,7 +33,7 @@ void handle_show_dirs() {
     if (fgets(input, sizeof(input), stdin)) {
         if (sscanf(input, "%d", &number) == 1) {
             if (number - 1 >= 0 && number - 1 < data.size) {
-                fprintf(stdout, "cd '%s'\n", data.dirs[number - 1]->title);
+                fprintf(stdout, "cd '%s'\n", data.dirs[number - 1]->path);
                 fprintf(stderr, "\n");
                 free_dir_arr(&data);
                 return;
@@ -57,7 +61,7 @@ void handle_show_comms() {
         return;
     }
 
-    if (dir->commands.size == 0) {
+    if (dir->size == 0) {
         free((char*)path);
         free_dir_arr(&data);
         fprintf(stderr, "This directory has no faved commands\n");
@@ -65,8 +69,13 @@ void handle_show_comms() {
     }
 
     fprintf(stderr, BOLD "Faved commands:\n" RESET);
-    for (int i = 0; i < dir->commands.size; i++) {
-        fprintf(stderr, "%d) %s\n", i + 1, dir->commands.items[i]);
+    for (int i = 0; i < dir->size; i++) {
+        if (dir->commands[i]->note != NULL) {
+            fprintf(stderr, "%d) '%s' - %s\n", i + 1, dir->commands[i]->note,
+                    dir->commands[i]->command);
+        } else {
+            fprintf(stderr, "%d) %s\n", i + 1, dir->commands[i]->command);
+        }
     }
 
     fprintf(stderr, BOLD "\nSelect number: " RESET);
@@ -75,8 +84,8 @@ void handle_show_comms() {
 
     if (fgets(input, sizeof(input), stdin)) {
         if (sscanf(input, "%d", &number) == 1) {
-            if (number - 1 >= 0 && number - 1 < dir->commands.size) {
-                fprintf(stdout, "%s\n", dir->commands.items[number - 1]);
+            if (number - 1 >= 0 && number - 1 < dir->size) {
+                fprintf(stdout, "%s\n", dir->commands[number - 1]->command);
                 free((char*)path);
                 free_dir_arr(&data);
                 return;
@@ -89,7 +98,8 @@ void handle_show_comms() {
     free((char*)path);
 }
 
-void handle_add_dir() {
+void handle_add_dir(char* note) {
+
     DirArr data;
     init_dir_arr(&data);
     deserialize(&data);
@@ -104,7 +114,7 @@ void handle_add_dir() {
         return;
     }
 
-    push_dir_arr(&data, path);
+    push_dir_arr(&data, path, note);
 
     serialize(&data);
 
@@ -114,7 +124,8 @@ void handle_add_dir() {
     free_dir_arr(&data);
 }
 
-void handle_add_comm(const char* comm) {
+void handle_add_comm(const char* comm, char* note) {
+
     DirArr data;
     init_dir_arr(&data);
     deserialize(&data);
@@ -129,7 +140,16 @@ void handle_add_comm(const char* comm) {
         return;
     }
 
-    push_command_dir(test_dir, comm);
+    for (int i = 0; i < test_dir->size; i++) {
+        if (strcmp(test_dir->commands[i]->command, comm) == 0) {
+            fprintf(stderr, "This command is already faved\n");
+            free_dir_arr(&data);
+            free((char*)path);
+            return;
+        }
+    }
+
+    push_command_dir(test_dir, comm, note);
 
     serialize(&data);
 
@@ -180,7 +200,7 @@ void handle_rm_comm() {
         return;
     }
 
-    if (dir->commands.size == 0) {
+    if (dir->size == 0) {
         free((char*)path);
         free_dir_arr(&data);
         fprintf(stderr, "This directory has no faved commands\n");
@@ -188,8 +208,13 @@ void handle_rm_comm() {
     }
 
     fprintf(stderr, BOLD "Remove faved command:\n" RESET);
-    for (int i = 0; i < dir->commands.size; i++) {
-        fprintf(stderr, "%d) %s\n", i + 1, dir->commands.items[i]);
+    for (int i = 0; i < dir->size; i++) {
+        if (dir->commands[i]->note != NULL) {
+            fprintf(stderr, "%d) '%s' - %s\n", i + 1, dir->commands[i]->note,
+                    dir->commands[i]->command);
+        } else {
+            fprintf(stderr, "%d) %s\n", i + 1, dir->commands[i]->command);
+        }
     }
 
     fprintf(stderr, BOLD "\nSelect number: " RESET);
@@ -198,10 +223,10 @@ void handle_rm_comm() {
 
     if (fgets(input, sizeof(input), stdin)) {
         if (sscanf(input, "%d", &number) == 1) {
-            if (number - 1 >= 0 && number - 1 < dir->commands.size) {
-                fprintf(stderr, BOLD "Removed: " RESET "%s",
-                        dir->commands.items[number - 1]);
-                pop_command_dir(dir, dir->commands.items[number - 1]);
+            if (number - 1 >= 0 && number - 1 < dir->size) {
+                fprintf(stderr, BOLD "Removed: " RESET "%s\n",
+                        dir->commands[number - 1]->command);
+                pop_command_dir(dir, dir->commands[number - 1]->command);
                 serialize(&data);
 
                 free((char*)path);

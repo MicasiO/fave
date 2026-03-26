@@ -5,32 +5,97 @@
 #include <string.h>
 
 // dir
-int init_dir(Dir* dir, const char* title) {
-    if (dir == NULL || title == NULL) {
+int init_dir(Dir* dir, const char* path, char* note) {
+
+    if (dir == NULL || path == NULL) {
         return 1;
     }
 
-    DIR* valid = opendir(title);
+    // validate directory
+    DIR* valid = opendir(path);
     if (valid == NULL) {
         perror("Failed to open directory");
         return 1;
     }
-
-    size_t len = strlen(title) + 1;
-
-    dir->title = malloc(len);
-    strcpy(dir->title, title);
-
-    init_str_arr(&(dir->commands));
     closedir(valid);
+
+    // setup commands array
+    dir->size = 0;
+    dir->capacity = 4;
+    dir->commands = (Comm**)calloc(dir->capacity, sizeof(*dir->commands));
+
+    if (dir->commands == NULL) {
+        perror("Failed to allocate memory for command array");
+        return 1;
+    }
+
+    dir->path = strdup(path);
+    dir->note = (note != NULL) ? strdup(note) : NULL;
+
     return 0;
 }
 
-int push_command_dir(Dir* dir, const char* comm) {
-    return push_str_arr(&(dir->commands), comm);
+int push_command_dir(Dir* dir, const char* comm, char* note) {
+
+    if (dir == NULL) {
+        return 1;
+    }
+
+    // resize if full
+    if (dir->size == dir->capacity) {
+        int new_capacity = dir->capacity * 2;
+        Comm** temp = realloc(dir->commands, sizeof(Comm*) * new_capacity);
+
+        if (temp == NULL) {
+            perror("Failed to resize array");
+            return 1;
+        }
+
+        dir->commands = temp;
+        dir->capacity = new_capacity;
+    }
+
+    Comm* new_comm = malloc(sizeof(Comm));
+    if (new_comm == NULL)
+        return 1;
+
+    new_comm->command = strdup(comm);
+    new_comm->note = (note != NULL) ? strdup(note) : NULL;
+
+    dir->commands[dir->size] = new_comm;
+    dir->size++;
+    return 0;
 }
+
 int pop_command_dir(Dir* dir, const char* comm) {
-    return pop_str_arr(&(dir->commands), comm);
+    int found_index = -1;
+
+    // find command index in array
+    for (int i = 0; i < dir->size; i++) {
+        if (strcmp(dir->commands[i]->command, comm) == 0) {
+            found_index = i;
+            break;
+        }
+    }
+
+    if (found_index == -1) {
+        return 1;
+    }
+
+    // delete command
+    free(dir->commands[found_index]->note);
+    free(dir->commands[found_index]->command);
+    free(dir->commands[found_index]);
+
+    // shift commands back in array
+    for (int i = found_index; i < dir->size - 1; i++) {
+        dir->commands[i] = dir->commands[i + 1];
+    }
+
+    dir->size--;
+    dir->commands[dir->size] = NULL;
+
+    return 0;
 }
 
 void free_dir(Dir* dir) {
@@ -38,8 +103,22 @@ void free_dir(Dir* dir) {
         return;
     }
 
-    free_str_arr(&(dir->commands));
-    free(dir->title);
+    for (int i = 0; i < dir->size; i++) {
+        if (dir->commands[i] != NULL) {
+            free(dir->commands[i]->note);
+            free(dir->commands[i]->command);
+            free(dir->commands[i]);
+        }
+    }
+
+    free(dir->commands);
+
+    dir->commands = NULL;
+    dir->capacity = 0;
+    dir->size = 0;
+
+    free(dir->note);
+    free(dir->path);
     free(dir);
 }
 
@@ -57,7 +136,7 @@ int init_dir_arr(DirArr* data) {
     return 0;
 }
 
-int push_dir_arr(DirArr* data, const char* title) {
+int push_dir_arr(DirArr* data, const char* path, char* note) {
     if (data->size == data->capacity) {
         int new_capacity = data->capacity * 2;
 
@@ -75,11 +154,11 @@ int push_dir_arr(DirArr* data, const char* title) {
     data->dirs[data->size] = malloc(sizeof(Dir));
 
     if (data->dirs[data->size] == NULL) {
-        perror("Failed to allocated dir struct");
+        perror("Failed to allocate dir struct");
         return 1;
     }
 
-    if (init_dir(data->dirs[data->size], title) != 0) {
+    if (init_dir(data->dirs[data->size], path, note) != 0) {
         free(data->dirs[data->size]);
         return 1;
     }
@@ -92,11 +171,11 @@ int push_dir_arr(DirArr* data, const char* title) {
     return 0;
 }
 
-int pop_dir_arr(DirArr* data, const char* title) {
+int pop_dir_arr(DirArr* data, const char* path) {
     int found_index = -1;
 
     for (int i = 0; i < data->size; i++) {
-        if (strcmp(data->dirs[i]->title, title) == 0) {
+        if (strcmp(data->dirs[i]->path, path) == 0) {
             found_index = i;
             break;
         }
@@ -119,13 +198,13 @@ int pop_dir_arr(DirArr* data, const char* title) {
     return 0;
 }
 
-Dir* get_dir(DirArr* data, const char* title) {
-    if (data == NULL || title == NULL) {
+Dir* get_dir(DirArr* data, const char* path) {
+    if (data == NULL || path == NULL) {
         return NULL;
     }
 
     for (int i = 0; i < data->size; i++) {
-        if (strcmp(data->dirs[i]->title, title) == 0) {
+        if (strcmp(data->dirs[i]->path, path) == 0) {
             return data->dirs[i];
         }
     }
